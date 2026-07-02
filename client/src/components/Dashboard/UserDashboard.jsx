@@ -63,7 +63,7 @@ const UserDashboard = () => {
       setError(
         err?.code === "ECONNABORTED"
           ? "The analysis service timed out. Try again in a moment."
-          : "Couldn't reach the VARUNA analysis service. Check that the backend is running."
+          : "Couldn't reach the Kavach analysis service. Check that the backend is running."
       );
     } finally {
       setLoading(false);
@@ -88,7 +88,7 @@ const UserDashboard = () => {
         <div>
           <h1 className="v-dash-title">Command Dashboard</h1>
           <p className="v-dash-subtitle">
-            Live synthesis of incidents pulled from NASA EONET, USGS, GDACS and Bluesky, scored by VARUNA AI.
+            Live synthesis of incidents pulled from NASA EONET, USGS, GDACS and Bluesky, scored by Kavach AI.
           </p>
         </div>
         <div className="v-dash-header-actions">
@@ -123,6 +123,12 @@ const UserDashboard = () => {
       </div>
 
       <div className="v-panel v-spectrum-panel">
+        {loading && !error && (
+          <div className="v-loading-overlay">
+            <span className="v-loading-spinner" />
+            <p>Refreshing dashboard…</p>
+          </div>
+        )}
         <div className="v-panel-title">
           <Layers size={17} /> Severity spectrum
         </div>

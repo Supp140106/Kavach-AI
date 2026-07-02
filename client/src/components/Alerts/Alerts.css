@@ -22,19 +22,96 @@
   50% { opacity: 0.35; }
 }
 
-.v-alert-feed {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.v-alert-summary-panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
 }
-.v-alert-row-top {
+.v-alert-summary-card {
+  border-radius: var(--v-radius);
+  border: 1px solid var(--v-border);
+  padding: 18px 20px;
+  background: var(--v-surface);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 12px;
 }
-.v-alert-row h4 {
-  font-size: 0.98rem;
+.v-alert-summary-card span {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--v-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.v-alert-summary-card strong {
+  font-size: 2rem;
   color: var(--v-navy);
-  margin-bottom: 4px;
+}
+.v-alert-summary-card.critical {
+  border-color: rgba(220, 38, 38, 0.16);
+  background: rgba(254, 226, 226, 0.84);
+}
+.v-alert-summary-card.high {
+  border-color: rgba(234, 88, 12, 0.16);
+  background: rgba(255, 247, 237, 0.9);
+}
+.v-alert-summary-card.total {
+  border-color: rgba(15, 23, 42, 0.12);
+  background: var(--v-surface);
+}
+
+.v-alert-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.v-alert-section {
+  position: relative;
+}
+.v-alert-feed {
+  display: grid;
+  gap: 12px;
+}
+
+.v-alert-card-skeleton {
+  min-height: 150px;
+}
+
+.v-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--v-sev-critical-bg);
+  color: var(--v-sev-critical);
+  border: 1px solid rgba(252, 165, 165, 0.9);
+  border-radius: var(--v-radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+.v-alert-banner span {
+  flex: 1;
+  min-width: 0;
+}
+
+.v-alert-row h4 {
+  font-size: 1rem;
+  color: var(--v-navy);
+  margin-bottom: 6px;
+}
+.v-alert-row p,
+.v-critical-card-summary {
+  color: var(--v-text-light);
+  line-height: 1.6;
+  margin: 10px 0;
+}
+
+@media (max-width: 860px) {
+  .v-alert-summary-panel {
+    grid-template-columns: 1fr;
+  }
 }

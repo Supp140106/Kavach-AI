@@ -6,7 +6,7 @@ const Footer = () => {
     <footer className="footer">
       <div className="footer-content">
         <div className="footer-section">
-          <h3 className="varuna-brand">VARUNA </h3>
+          <h3 className="varuna-brand">KAVACH</h3>
           <p>
             AI-powered ocean and disaster incident analysis, synthesizing NASA EONET, USGS, GDACS and Bluesky data in real time.
           </p>
@@ -21,7 +21,7 @@ const Footer = () => {
             <li><a href="/dashboard">Dashboard</a></li>
             <li><a href="/alerts">Critical Alerts</a></li>
             <li><a href="/incidents">Incidents</a></li>
-            <li><a href="/chat">Ask VARUNA</a></li>
+            <li><a href="/chat">Ask Kavach</a></li>
           </ul>
         </div>
         
@@ -49,7 +49,7 @@ const Footer = () => {
       </div>
       
       <div className="footer-bottom">
-        <p>&copy; 2025 <span className="varuna-brand">VARUNA</span> . All rights reserved.</p>
+        <p>&copy; 2025 <span className="varuna-brand">KAVACH</span> . All rights reserved.</p>
         <p>Developed for the safety and security of coastal communities across India.</p>
       </div>
     </footer>

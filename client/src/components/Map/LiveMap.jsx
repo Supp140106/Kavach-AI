@@ -3,7 +3,8 @@ import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaf
 import { useLocation } from "react-router-dom";
 import { RefreshCw, AlertCircle, ExternalLink } from "lucide-react";
 import PageShell from "../Layout/PageShell";
-import { getIncidents } from "../../api/varunaApi";
+// import { getIncidents } from "../../api/varunaApi";
+import { getDashboard } from "../../api/varunaApi";
 import { SeverityBadge, SEVERITY_ORDER } from "../common/Severity";
 import "./LiveMap.css";
 
@@ -26,6 +27,16 @@ const FlyToIncident = ({ incident }) => {
   return null;
 };
 
+const FlyToCenter = ({ center, zoom }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center?.length === 2) {
+      map.flyTo(center, zoom, { duration: 0.8 });
+    }
+  }, [center, zoom, map]);
+  return null;
+};
+
 const LiveMap = () => {
   const routerLocation = useLocation();
   const focusId = routerLocation.state?.focusId;
@@ -34,24 +45,65 @@ const LiveMap = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeSeverities, setActiveSeverities] = useState(new Set(SEVERITY_ORDER));
+  const [userLocation, setUserLocation] = useState([20, 0]);
+  const [locationStatus, setLocationStatus] = useState("prompt");
+  const [locationError, setLocationError] = useState("");
+  const [allowGlobal, setAllowGlobal] = useState(false);
+
+  const requestLocation = useCallback(() => {
+    if (!navigator?.geolocation) {
+      setLocationStatus("denied");
+      setLocationError("Geolocation is unavailable in this browser.");
+      return;
+    }
+
+    setLocationStatus("requesting");
+    setLocationError("");
+
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setUserLocation([coords.latitude, coords.longitude]);
+        setLocationStatus("granted");
+      },
+      (err) => {
+        const message =
+          err.code === 1
+            ? "Location permission denied. Allow location to center the map."
+            : err.code === 2
+            ? "Unable to determine your location."
+            : err.code === 3
+            ? "Location request timed out."
+            : err.message || "Unable to access location.";
+        setLocationStatus("denied");
+        setLocationError(message);
+      },
+      { timeout: 15000, maximumAge: 60000, enableHighAccuracy: true }
+    );
+  }, []);
+
+  const showLocationOverlay =
+    locationStatus === "prompt" ||
+    locationStatus === "requesting" ||
+    (locationStatus === "denied" && !allowGlobal);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getIncidents();
-      setIncidents(Array.isArray(data) ? data : []);
+      const data = await getDashboard();
+      setIncidents(Array.isArray(data?.all_incidents) ? data.all_incidents : []);
     } catch (err) {
       console.error("Failed to load sources:", err);
-      setError("Couldn't reach the VARUNA analysis service. Check that the backend is running.");
+      setError("Couldn't reach the Kavach analysis service. Check that the backend is running.");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    requestLocation();
     load();
-  }, [load]);
+  }, [load, requestLocation]);
 
   const toggleSeverity = (sev) => {
     setActiveSeverities((prev) => {
@@ -115,11 +167,46 @@ const LiveMap = () => {
       </div>
 
       <div className="v-map-frame">
-        <MapContainer center={[20, 0]} zoom={2} minZoom={2} worldCopyJump>
+        {(showLocationOverlay || loading) && (
+          <div className="v-loading-overlay">
+            <span className="v-loading-spinner" />
+            <div>
+              <p>
+                {locationStatus === "prompt"
+                  ? "Allow location access to center the map on your area."
+                  : locationStatus === "requesting"
+                  ? "Requesting location permission…"
+                  : loading
+                  ? "Loading map incidents…"
+                  : locationError || "Allow location access to view the map."}
+              </p>
+              <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap", justifyContent: "center" }}>
+                {(locationStatus === "prompt" || locationStatus === "denied") && (
+                  <button className="v-btn v-btn-primary" onClick={requestLocation}>
+                    Allow location
+                  </button>
+                )}
+                {(locationStatus === "denied" || locationStatus === "prompt") && (
+                  <button className="v-btn" onClick={() => setAllowGlobal(true)}>
+                    Continue without location
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        <MapContainer
+          center={userLocation}
+          zoom={locationStatus === "granted" ? 6 : 2}
+          minZoom={2}
+          worldCopyJump
+          style={{ height: "100%", width: "100%" }}
+        >
           <TileLayer
             attribution='&copy; OpenStreetMap contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          {locationStatus === "granted" && <FlyToCenter center={userLocation} zoom={6} />}
           {focusIncident && <FlyToIncident incident={focusIncident} />}
           {visibleIncidents.map((incident) => (
             <CircleMarker

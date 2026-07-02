@@ -127,7 +127,7 @@ const Reports = () => {
       setSources(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to load sources:", err);
-      setError("Couldn't reach the VARUNA analysis service. Check that the backend is running.");
+      setError("Couldn't reach the Kavach analysis service. Check that the backend is running.");
     } finally {
       setLoading(false);
     }
@@ -256,6 +256,12 @@ const Reports = () => {
       </div>
 
       <div className="v-panel v-incidents-table-panel">
+        {(loading || analyzing) && (
+          <div className="v-loading-overlay">
+            <span className="v-loading-spinner" />
+            <p>{loading ? "Loading incident list…" : "Running fresh analysis…"}</p>
+          </div>
+        )}
         {loading ? (
           <div className="v-skeleton" style={{ height: 300, width: "100%" }} />
         ) : filtered.length === 0 ? (

@@ -16,7 +16,7 @@ const Chat = () => {
     {
       role: "assistant",
       answer:
-        "I'm VARUNA. Ask me about current incidents — severity, location, trends, or what needs attention first.",
+        "I'm Kavach. Ask me about current incidents — severity, location, trends, or what needs attention first.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -61,12 +61,18 @@ const Chat = () => {
     <PageShell noFooter>
       <div className="v-dash-header">
         <div>
-          <h1 className="v-dash-title">Ask VARUNA</h1>
+          <h1 className="v-dash-title">Ask Kavach</h1>
           <p className="v-dash-subtitle">Natural-language answers grounded in the current incident set.</p>
         </div>
       </div>
 
       <div className="v-chat-panel">
+        {sending && (
+          <div className="v-chat-loading-mask">
+            <span className="v-loading-spinner" />
+            <p>Processing your message…</p>
+          </div>
+        )}
         <div className="v-chat-scroll" ref={scrollRef}>
           {messages.map((m, idx) => (
             <div key={idx} className={`v-chat-row ${m.role}`}>

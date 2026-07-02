@@ -1,5 +1,5 @@
 // src/api/varunaApi.js
-// Client for the VARUNA Rust backend (Axum). This is the ONLY backend the
+// Client for the KAVACH Rust backend (Axum). This is the ONLY backend the
 // frontend talks to — it never calls the Python ML service directly.
 //
 // Real, documented endpoints (nothing else exists):
@@ -40,12 +40,13 @@ export const askAI = async (question) => {
   return data;
 };
 
-// Keep the old name too, in case anything else still imports it.
+// Backwards-compatible aliases for legacy imports.
+export const askKavach = askAI;
 export const askVaruna = askAI;
 
 /** POST /report — citizen report submission, returns AI analysis of the report */
 export const submitReport = async ({ description, latitude, longitude, category }) => {
-  const { data } = await client.post("/report", { description, latitude, longitude, category });
+  const { data } = await client.post("/incidents/report", { description, latitude, longitude, category });
   return data;
 };
 

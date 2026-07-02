@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Siren, AlertCircle, Radio } from "lucide-react";
+import { Siren, AlertCircle, Radio, RefreshCw } from "lucide-react";
 import PageShell from "../Layout/PageShell";
 import { getDashboard } from "../../api/varunaApi";
 import { SeverityBadge, PriorityScore } from "../common/Severity";
@@ -21,7 +21,7 @@ const Alerts = () => {
       setData(result);
     } catch (err) {
       console.error("Failed to load alerts:", err);
-      setError("Couldn't reach the VARUNA analysis service. Check that the backend is running.");
+      setError("Couldn't reach the Kavach analysis service. Check that the backend is running.");
     } finally {
       setLoading(false);
     }
@@ -39,6 +39,7 @@ const Alerts = () => {
 
   const critical = (data?.top_critical_incidents || []).filter((i) => i.severity === "Critical");
   const high = (data?.top_critical_incidents || []).filter((i) => i.severity === "High");
+  const total = critical.length + high.length;
 
   return (
     <PageShell noFooter>
@@ -54,6 +55,9 @@ const Alerts = () => {
           >
             <Radio size={14} /> {live ? "Live" : "Paused"}
           </button>
+          <button className="v-btn v-btn-primary" onClick={load} disabled={loading}>
+            {loading ? <span className="v-loading-spinner" /> : <RefreshCw size={16} />} Refresh
+          </button>
         </div>
       </div>
 
@@ -65,19 +69,43 @@ const Alerts = () => {
         </div>
       )}
 
+      <div className="v-alert-summary-panel">
+        <div className="v-alert-summary-card critical">
+          <span>Critical alerts</span>
+          <strong>{critical.length}</strong>
+        </div>
+        <div className="v-alert-summary-card high">
+          <span>High alerts</span>
+          <strong>{high.length}</strong>
+        </div>
+        <div className="v-alert-summary-card total">
+          <span>Total tracked</span>
+          <strong>{total}</strong>
+        </div>
+      </div>
+
       {loading ? (
-        <div className="v-skeleton" style={{ height: 200, width: "100%" }} />
-      ) : critical.length === 0 && high.length === 0 ? (
+        <div className="v-alert-grid">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="v-panel v-alert-card-skeleton">
+              <div className="v-skeleton" style={{ height: 18, width: '50%', marginBottom: 14 }} />
+              <div className="v-skeleton" style={{ height: 14, width: '100%', marginBottom: 10 }} />
+              <div className="v-skeleton" style={{ height: 14, width: '85%', marginBottom: 10 }} />
+              <div className="v-skeleton" style={{ height: 14, width: '75%' }} />
+            </div>
+          ))}
+        </div>
+      ) : total === 0 ? (
         <div className="v-panel">
           <div className="v-empty-state">
             <Siren size={28} style={{ marginBottom: 10, color: "var(--v-sev-low)" }} />
-            <h4>No critical or high-severity incidents</h4>
-            <p>Everything currently tracked is at Moderate severity or below.</p>
+            <h4>No current critical or high alerts</h4>
+            <p>Everything tracked by Kavach is operating at Moderate severity or below.</p>
           </div>
         </div>
       ) : (
-        <>
-          {!!critical.length && (
+        <div className="v-alert-grid">
+          {critical.length > 0 && (
             <div className="v-panel v-alert-section critical">
               <div className="v-panel-title"><Siren size={17} /> Critical ({critical.length})</div>
               <div className="v-alert-feed">
@@ -87,8 +115,8 @@ const Alerts = () => {
               </div>
             </div>
           )}
-          {!!high.length && (
-            <div className="v-panel v-alert-section high" style={{ marginTop: 16 }}>
+          {high.length > 0 && (
+            <div className="v-panel v-alert-section high">
               <div className="v-panel-title"><Siren size={17} /> High ({high.length})</div>
               <div className="v-alert-feed">
                 {high.map((incident) => (
@@ -97,7 +125,7 @@ const Alerts = () => {
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
     </PageShell>
   );

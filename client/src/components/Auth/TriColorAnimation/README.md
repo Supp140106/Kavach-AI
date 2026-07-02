@@ -102,4 +102,4 @@ import TriColorAnimationTest from './TriColorAnimationTest';
 
 ---
 
-**Built with ❤️ for VARUNA - Ocean Disaster Management System**
+**Built with ❤️ for KAVACH - Ocean Disaster Management System**

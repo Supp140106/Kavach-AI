@@ -1,5 +1,5 @@
 // Simple service worker for caching API responses
-const CACHE_NAME = 'varuna-api-cache-v1';
+const CACHE_NAME = 'kavach-api-cache-v1';
 const API_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // Cache API responses

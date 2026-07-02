@@ -103,13 +103,16 @@ body, #root {
 .brand-title {
   margin: 0;
   font-size: 1.8rem;
-  font-weight: 700;
-  color: rgb(31, 31, 75);
-  letter-spacing: 0.1em;
+  font-weight: 800;
+  color: var(--primary-color);
+  letter-spacing: 0.09em;
   font-family: 'Space Mono', monospace;
-  -webkit-text-stroke: 0.5px rgb(31, 31, 75);
-  text-stroke: 0.5px rgb(31, 31, 75);
-  font-stretch: condensed;
+  text-transform: uppercase;
+}
+
+.nav-item.active {
+  color: var(--primary-color);
+  font-weight: 700;
 }
 
 .brand-subtitle {

@@ -32,12 +32,17 @@
 }
 
 .v-map-frame {
+  position: relative;
   height: 62vh;
   min-height: 420px;
   border-radius: var(--v-radius);
   overflow: hidden;
   border: 1px solid var(--v-border);
   box-shadow: var(--v-shadow-sm);
+}
+.v-map-frame .leaflet-container {
+  height: 100%;
+  width: 100%;
 }
 
 .v-map-popup { min-width: 200px; }

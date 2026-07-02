@@ -16,7 +16,7 @@ import {
 import { useNavigate, Link, NavLink, useLocation } from "react-router-dom";
 import { AuthContext } from "../../Auth/context/AuthContext"; // Import AuthContext
 import "./UserDashboardNav.css";
-import varunaLogo from "../../../assets/varuna.png";
+import brandLogo from "../../../assets/varuna.png";
 
 const UserDashboardNavbar = ({ user }) => {
   const navigate = useNavigate();
@@ -73,7 +73,7 @@ const UserDashboardNavbar = ({ user }) => {
     { name: "Live Map", icon: Map, href: "/map" },
     { name: "Alerts", icon: AlertTriangle, href: "/alerts" },
     { name: "Incidents", icon: Activity, href: "/incidents" },
-    { name: "Ask VARUNA", icon: MessageSquare, href: "/chat" },
+    { name: "Ask Kavach", icon: MessageSquare, href: "/chat" },
   ];
 
   return (
@@ -82,10 +82,10 @@ const UserDashboardNavbar = ({ user }) => {
         {/* Logo Section */}
         <div className="navbar-brand" onClick={handleBrandClick} style={{ cursor: 'pointer' }}>
           <div className="brand-logo">
-            <img src={varunaLogo} alt="Varuna Logo" className="logo-icon" width={48} height={48} />
+            <img src={brandLogo} alt="Kavach Logo" className="logo-icon" width={48} height={48} />
           </div>
           <div className="brand-text">
-            <h1 className="brand-title">VARUNA</h1>
+            <h1 className="brand-title">KAVACH</h1>
         
           </div>
         </div>

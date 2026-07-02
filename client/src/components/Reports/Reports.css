@@ -26,10 +26,10 @@
 }
 
 .v-incidents-table-panel { padding: 10px 14px; }
-.v-incidents-table { display: flex; flex-direction: column; }
+.v-incidents-table { display: flex; flex-direction: column; min-width: 0; }
 .v-incidents-row {
   display: grid;
-  grid-template-columns: 100px 2fr 1fr 1fr 100px 32px;
+  grid-template-columns: 100px minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) 100px 32px;
   align-items: center;
   gap: 12px;
   padding: 11px 8px;
@@ -49,6 +49,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 .v-incidents-cell {
   font-size: 0.78rem;
@@ -56,6 +57,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 .v-incidents-link {
   color: var(--v-primary);

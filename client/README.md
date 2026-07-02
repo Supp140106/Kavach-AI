@@ -1,6 +1,6 @@
-# VARUNA - Ocean Disaster Management Client
+# KAVACH - Ocean Disaster Management Client
 
-The frontend client for VARUNA, a comprehensive ocean disaster management system built with React and Vite.
+The frontend client for KAVACH, a comprehensive ocean disaster management system built with React and Vite.
 
 ## Features
 
