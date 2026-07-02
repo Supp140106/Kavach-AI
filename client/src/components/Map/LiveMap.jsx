@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaf
 import { useLocation } from "react-router-dom";
 import { RefreshCw, AlertCircle, ExternalLink } from "lucide-react";
 import PageShell from "../Layout/PageShell";
-import { getAllSources } from "../../api/varunaApi";
+import { getIncidents } from "../../api/varunaApi";
 import { SeverityBadge, SEVERITY_ORDER } from "../common/Severity";
 import "./LiveMap.css";
 
@@ -39,7 +39,7 @@ const LiveMap = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getAllSources();
+      const data = await getIncidents();
       setIncidents(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to load sources:", err);

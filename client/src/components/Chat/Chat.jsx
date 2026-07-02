@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Send, Bot, User as UserIcon, Sparkles } from "lucide-react";
 import PageShell from "../Layout/PageShell";
-import { askVaruna } from "../../api/varunaApi";
+import { askAI } from "../../api/varunaApi";
 import "./Chat.css";
 
 const SUGGESTIONS = [
@@ -34,7 +34,7 @@ const Chat = () => {
     setInput("");
     setSending(true);
     try {
-      const result = await askVaruna(q);
+      const result = await askAI(q);
       setMessages((prev) => [...prev, { role: "assistant", ...result }]);
     } catch (err) {
       console.error("Chat request failed:", err);

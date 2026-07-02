@@ -1,18 +1,20 @@
 use axum::{
+    http::Method,
     Router,
-    http::{HeaderValue, Method},
 };
-use tower_http::cors::{Any, CorsLayer};
-use tower_http::trace::TraceLayer;
+use tower_http::{
+    cors::{Any, CorsLayer},
+    trace::TraceLayer,
+};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use std::sync::Arc;
-use dotenvy::dotenv;
-use std::env;
 
-mod routes;
-mod services;
+use dotenvy::dotenv;
+use std::{env, sync::Arc};
+
 mod models;
 mod repository;
+mod routes;
+mod services;
 mod state;
 
 use state::AppState;
@@ -22,42 +24,72 @@ async fn main() {
     dotenv().ok();
 
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "backend=debug,tower_http=debug".into()),
-        ))
+        .with(
+            tracing_subscriber::EnvFilter::new(
+                env::var("RUST_LOG")
+                    .unwrap_or_else(|_| "backend=info,tower_http=info".to_string()),
+            ),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    tracing::info!("Starting VARUNA Backend...");
 
-    let ai_service_url = env::var("AI_SERVICE_URL")
-        .unwrap_or_else(|_| "http://localhost:8000".to_string());
+    let database_url =
+        env::var("DATABASE_URL").expect("DATABASE_URL environment variable missing");
 
-    let pool = sqlx::PgPool::connect(&database_url)
+    let ai_service_url =
+        env::var("AI_SERVICE_URL").unwrap_or_else(|_| "http://localhost:8000".into());
+
+    tracing::info!("Connecting to PostgreSQL...");
+
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&database_url)
         .await
         .expect("Failed to connect to PostgreSQL");
+
+    tracing::info!("Running migrations...");
 
     sqlx::migrate!("./migrations")
         .run(&pool)
         .await
         .expect("Failed to run migrations");
 
+    tracing::info!("Database ready.");
+
     let state = Arc::new(AppState::new(pool, ai_service_url));
 
     let cors = CorsLayer::new()
         .allow_origin(Any)
-        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+        ])
         .allow_headers(Any);
 
     let app = Router::new()
-        .nest("/api", routes::create_router(state.clone()))
+        .nest("/api", routes::create_router(state))
         .layer(cors)
         .layer(TraceLayer::new_for_http());
 
-    let addr = "0.0.0.0:3206";
-    tracing::info!("VARUNA Backend running on {}", addr);
+    // Cloud Run provides PORT automatically
+    let port = env::var("PORT")
+        .unwrap_or_else(|_| "8080".to_string())
+        .parse::<u16>()
+        .expect("Invalid PORT");
 
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let addr = format!("0.0.0.0:{port}");
+
+    tracing::info!("Listening on {}", addr);
+
+    let listener = tokio::net::TcpListener::bind(&addr)
+        .await
+        .expect("Failed to bind");
+
+    axum::serve(listener, app)
+        .await
+        .expect("Server failed");
 }
