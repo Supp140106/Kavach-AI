@@ -35,7 +35,12 @@ const Chat = () => {
     setSending(true);
     try {
       const result = await askAI(q);
-      setMessages((prev) => [...prev, { role: "assistant", ...result }]);
+      // Ensure answer is a string, in case API returns different format
+      const normalizedResult = {
+        ...result,
+        answer: typeof result.answer === 'string' ? result.answer : JSON.stringify(result.answer || result),
+      };
+      setMessages((prev) => [...prev, { role: "assistant", ...normalizedResult }]);
     } catch (err) {
       console.error("Chat request failed:", err);
       setMessages((prev) => [
@@ -83,11 +88,14 @@ const Chat = () => {
                 <p>{m.answer}</p>
                 {!!m.relevant_incidents?.length && (
                   <div className="v-chat-incidents">
-                    {m.relevant_incidents.map((inc, i) => (
-                      <span key={i} className="v-chat-incident-chip">
-                        {inc.title || inc.incident_id || String(inc)}
-                      </span>
-                    ))}
+                    {m.relevant_incidents.map((inc, i) => {
+                      const label = typeof inc === 'object' ? (inc.title || inc.incident_id || `Incident ${i}`) : String(inc);
+                      return (
+                        <span key={i} className="v-chat-incident-chip">
+                          {label}
+                        </span>
+                      );
+                    })}
                   </div>
                 )}
                 {m.role === "assistant" && m.model && (
