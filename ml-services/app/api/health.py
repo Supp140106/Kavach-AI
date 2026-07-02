@@ -11,5 +11,5 @@ def health():
     return {
         "status": "healthy",
         "service": "VARUNA AI",
-        "model": "qwen3:8b"
+        "model": "gemini-2.5-flash-lite"
     }
