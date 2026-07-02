@@ -1,0 +1,31 @@
+.v-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  max-width: 560px;
+}
+.v-profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--v-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.v-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.v-profile-info { flex: 1; }
+.v-profile-info h3 { font-size: 1.1rem; color: var(--v-navy); margin-bottom: 6px; }
+.v-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--v-text-light);
+  margin-top: 2px;
+}

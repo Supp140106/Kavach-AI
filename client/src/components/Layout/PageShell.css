@@ -1,0 +1,16 @@
+.v-page-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--v-surface-alt);
+}
+.v-page-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 28px 24px 56px;
+}
+@media (max-width: 640px) {
+  .v-page-content { padding: 18px 14px 40px; }
+}

@@ -1,0 +1,40 @@
+.v-live-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--v-border);
+  background: var(--v-surface);
+  color: var(--v-text-light);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.v-live-toggle.on {
+  color: var(--v-sev-low);
+  border-color: var(--v-sev-low);
+  background: var(--v-sev-low-bg);
+}
+.v-live-toggle.on svg { animation: v-pulse-dot 1.6s ease infinite; }
+@keyframes v-pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.v-alert-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.v-alert-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.v-alert-row h4 {
+  font-size: 0.98rem;
+  color: var(--v-navy);
+  margin-bottom: 4px;
+}

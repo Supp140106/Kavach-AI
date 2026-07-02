@@ -1,0 +1,132 @@
+/* Import Leaflet CSS */
+@import 'leaflet/dist/leaflet.css';
+
+/* ==========================================================================
+   VARUNA design tokens
+   Extends the existing auth palette (govt blue #1e40af / saffron / green)
+   with a severity system + a monospace "telemetry" face for incident data.
+   ========================================================================== */
+:root {
+  /* base palette (matches SignIn/SignUp) */
+  --v-primary: #1e40af;
+  --v-primary-light: #3b82f6;
+  --v-navy: #0f172a;
+  --v-surface: #ffffff;
+  --v-surface-alt: #f1f5f9;
+  --v-border: #e2e8f0;
+  --v-text: #1e293b;
+  --v-text-light: #64748b;
+  --v-saffron: #FF9933;
+  --v-tricolor-green: #138808;
+
+  /* severity system — the signature language of this app.
+     Every incident, everywhere, is colored by this scale. */
+  --v-sev-low: #16a34a;
+  --v-sev-low-bg: #f0fdf4;
+  --v-sev-moderate: #b45309;
+  --v-sev-moderate-bg: #fefce8;
+  --v-sev-moderate-dot: #eab308;
+  --v-sev-high: #ea580c;
+  --v-sev-high-bg: #fff7ed;
+  --v-sev-critical: #dc2626;
+  --v-sev-critical-bg: #fef2f2;
+
+  --v-shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.06);
+  --v-shadow-md: 0 8px 25px rgba(15, 23, 42, 0.10);
+  --v-shadow-lg: 0 20px 45px rgba(15, 23, 42, 0.14);
+
+  --v-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --v-radius: 12px;
+  --v-radius-sm: 8px;
+}
+
+.v-mono { font-family: var(--v-mono); }
+
+/* Global CSS Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Button Styles */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Input Styles */
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Link Styles */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Utility Classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Focus Styles */
+*:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Ensure map containers have proper dimensions */
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+}

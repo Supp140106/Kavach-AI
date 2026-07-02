@@ -1,0 +1,228 @@
+/* ---------- Badges ---------- */
+.v-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 4px 10px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.v-badge-md { font-size: 0.8rem; }
+.v-badge-sm { font-size: 0.7rem; padding: 3px 8px; }
+.v-badge-lg { font-size: 0.9rem; padding: 6px 14px; }
+
+.v-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.v-sev-low { color: var(--v-sev-low); background: var(--v-sev-low-bg); }
+.v-sev-low .v-badge-dot { background: var(--v-sev-low); }
+
+.v-sev-moderate { color: var(--v-sev-moderate); background: var(--v-sev-moderate-bg); }
+.v-sev-moderate .v-badge-dot { background: var(--v-sev-moderate-dot); }
+
+.v-sev-high { color: var(--v-sev-high); background: var(--v-sev-high-bg); }
+.v-sev-high .v-badge-dot { background: var(--v-sev-high); }
+
+.v-sev-critical { color: var(--v-sev-critical); background: var(--v-sev-critical-bg); }
+.v-sev-critical .v-badge-dot { background: var(--v-sev-critical); }
+
+/* ---------- Priority score ---------- */
+.v-priority-score {
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* ---------- Severity spectrum bar (dashboard signature) ---------- */
+.v-spectrum-bar {
+  display: flex;
+  width: 100%;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--v-surface-alt);
+  box-shadow: inset 0 0 0 1px var(--v-border);
+}
+.v-spectrum-segment {
+  height: 100%;
+  min-width: 3px;
+  transition: width 0.4s ease;
+}
+.v-spectrum-segment.v-sev-low { background: var(--v-sev-low); }
+.v-spectrum-segment.v-sev-moderate { background: var(--v-sev-moderate-dot); }
+.v-spectrum-segment.v-sev-high { background: var(--v-sev-high); }
+.v-spectrum-segment.v-sev-critical { background: var(--v-sev-critical); }
+
+.v-spectrum-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 14px;
+}
+.v-spectrum-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--v-text-light);
+}
+.v-spectrum-legend-label { font-weight: 500; color: var(--v-text); }
+.v-spectrum-legend-value { color: var(--v-text-light); }
+.v-spectrum-empty {
+  color: var(--v-text-light);
+  font-size: 0.85rem;
+  padding: 12px 0;
+}
+
+/* ---------- Ranked bar list (categories / sources) ---------- */
+.v-ranked-list { display: flex; flex-direction: column; gap: 10px; }
+.v-ranked-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 36px;
+  align-items: center;
+  gap: 10px;
+}
+.v-ranked-label {
+  font-size: 0.82rem;
+  color: var(--v-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.v-ranked-track {
+  height: 8px;
+  background: var(--v-surface-alt);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.v-ranked-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.v-ranked-value {
+  font-size: 0.78rem;
+  color: var(--v-text-light);
+  text-align: right;
+}
+
+/* ---------- Incident card (used on Dashboard / Alerts / Incidents) ---------- */
+.v-incident-card {
+  position: relative;
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-radius);
+  padding: 16px 16px 16px 20px;
+  box-shadow: var(--v-shadow-sm);
+  overflow: hidden;
+}
+.v-incident-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+.v-incident-card.v-sev-low::before { background: var(--v-sev-low); }
+.v-incident-card.v-sev-moderate::before { background: var(--v-sev-moderate-dot); }
+.v-incident-card.v-sev-high::before { background: var(--v-sev-high); }
+.v-incident-card.v-sev-critical::before { background: var(--v-sev-critical); }
+
+/* ---------- Generic building blocks ---------- */
+.v-stat-card {
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-radius);
+  padding: 18px 20px;
+  box-shadow: var(--v-shadow-sm);
+}
+.v-stat-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--v-text-light);
+  font-weight: 600;
+}
+.v-stat-value {
+  font-family: var(--v-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--v-navy);
+  margin-top: 6px;
+}
+
+.v-panel {
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-radius);
+  padding: 20px 22px;
+  box-shadow: var(--v-shadow-sm);
+}
+.v-panel-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--v-navy);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.v-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--v-radius-sm);
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  border: 1px solid var(--v-border);
+  background: var(--v-surface);
+  color: var(--v-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.v-btn:hover { border-color: var(--v-primary-light); color: var(--v-primary); }
+.v-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.v-btn-primary {
+  background: var(--v-primary);
+  border-color: var(--v-primary);
+  color: #fff;
+}
+.v-btn-primary:hover { background: var(--v-primary-light); border-color: var(--v-primary-light); color: #fff; }
+
+.v-empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--v-text-light);
+}
+.v-empty-state h4 { color: var(--v-text); font-size: 1rem; margin-bottom: 6px; }
+
+.v-loading-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: currentColor;
+  animation: v-spin 0.7s linear infinite;
+}
+@keyframes v-spin { to { transform: rotate(360deg); } }
+
+.v-skeleton {
+  background: linear-gradient(90deg, var(--v-surface-alt) 25%, #e8edf3 37%, var(--v-surface-alt) 63%);
+  background-size: 400% 100%;
+  animation: v-shimmer 1.4s ease infinite;
+  border-radius: 8px;
+}
+@keyframes v-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
