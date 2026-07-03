@@ -47,6 +47,14 @@ def _render_incidents(incidents: list[dict]) -> str:
     return "\n\n".join(entries)
 
 
+def _extract_json(raw: str) -> str:
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        return raw[start:end + 1]
+    return raw
+
+
 def answer_question(question: str) -> dict:
     parsed = parse_query(question)
     incidents = retrieve_incidents(question)
@@ -64,21 +72,37 @@ User Question:
         result = ask_llm(CHAT_SYSTEM_PROMPT, user_prompt)
 
         raw = result["response"].strip()
-        data = json.loads(raw)
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            cleaned = _extract_json(raw)
+            try:
+                data = json.loads(cleaned)
+            except json.JSONDecodeError:
+                return {
+                    "answer": raw,
+                    "relevant_incidents": incidents,
+                    "confidence": 0.0,
+                    "model": result.get("model", "unknown"),
+                    "processing_time_ms": result.get("processing_time_ms", 0),
+                    "parsed_query": parsed,
+                }
 
         return {
-            "answer": data.get("answer", ""),
+            "answer": data.get("answer", raw),
             "relevant_incidents": data.get("relevant_incidents", incidents),
             "confidence": data.get("confidence", 0.0),
-            "model": result["model"],
-            "processing_time_ms": result["processing_time_ms"],
+            "model": result.get("model", "unknown"),
+            "processing_time_ms": result.get("processing_time_ms", 0),
             "parsed_query": parsed,
         }
 
     except Exception as e:
         return {
-            "answer": f"I encountered an error processing your question: {str(e)}",
+            "answer": "I encountered an error processing your question. Please try again.",
             "relevant_incidents": incidents,
             "confidence": 0.0,
+            "model": "unknown",
+            "processing_time_ms": 0,
             "parsed_query": parsed,
         }
