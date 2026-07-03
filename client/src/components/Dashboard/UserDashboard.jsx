@@ -7,8 +7,22 @@ import {
   Clock,
   MapPin,
   AlertCircle,
+  TrendingUp,
+  PieChart as PieIcon,
+  ShieldAlert
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell
+} from "recharts";
 import PageShell from "../Layout/PageShell";
 import { getDashboard } from "../../api/varunaApi";
 import { lookUpLocationName } from "../../utils/geolocation";
@@ -16,18 +30,22 @@ import {
   SeverityBadge,
   PriorityScore,
   SeverityBreakdownBar,
-  RankedBarList,
 } from "../common/Severity";
 import "./UserDashboard.css";
 
-const StatCard = ({ label, value, loading }) => (
-  <div className="v-stat-card">
-    <div className="v-stat-label">{label}</div>
-    {loading ? (
-      <div className="v-skeleton" style={{ height: 32, width: "60%", marginTop: 8 }} />
-    ) : (
-      <div className="v-stat-value">{value}</div>
-    )}
+const StatCard = ({ label, value, loading, icon: Icon }) => (
+  <div className="v-stat-card-3d">
+    <div className="v-stat-card-inner">
+      <div className="v-stat-info">
+        <div className="v-stat-label">{label}</div>
+        {loading ? (
+          <div className="v-skeleton" style={{ height: 32, width: "60%", marginTop: 8 }} />
+        ) : (
+          <div className="v-stat-value">{value}</div>
+        )}
+      </div>
+      {Icon && <div className="v-stat-icon-wrapper"><Icon size={24} /></div>}
+    </div>
   </div>
 );
 
@@ -116,6 +134,19 @@ const UserDashboard = () => {
   const criticalIncidents = data?.top_critical_incidents || [];
   const recentAnalyses = data?.recent_analyses || [];
 
+  // Parse breakdown dictionaries for beautiful Recharts rendering
+  const categoryChartData = Object.keys(categoryBreakdown).map((key) => ({
+    name: key,
+    value: categoryBreakdown[key],
+  }));
+
+  const sourceChartData = Object.keys(sourceBreakdown).map((key) => ({
+    name: key,
+    value: sourceBreakdown[key],
+  }));
+
+  const PIE_COLORS = ["#3b82f6", "#ef4444", "#f59e0b", "#10b981", "#6366f1", "#8b5cf6"];
+
   return (
     <PageShell>
       <div className="v-dash-header">
@@ -131,9 +162,9 @@ const UserDashboard = () => {
               Updated {timeAgo(lastUpdated.toISOString())}
             </span>
           )}
-          <button className="v-btn v-btn-primary" onClick={() => load(true)} disabled={refreshing}>
+          <button className="v-btn v-btn-primary v-btn-3d" onClick={() => load(true)} disabled={refreshing}>
             {refreshing ? <span className="v-loading-spinner" /> : <RefreshCw size={16} />}
-            Refresh
+            Refresh System
           </button>
         </div>
       </div>
@@ -146,59 +177,109 @@ const UserDashboard = () => {
         </div>
       )}
 
+      {/* 3D Isometric Card Strips */}
       <div className="v-stat-strip">
-        <StatCard label="Total Incidents" value={summary.total_incidents ?? "—"} loading={loading} />
-        <StatCard label="Analyzed by AI" value={summary.total_analyzed ?? "—"} loading={loading} />
+        <StatCard label="Total Incidents" value={summary.total_incidents ?? "—"} loading={loading} icon={TrendingUp} />
+        <StatCard label="Analyzed by AI" value={summary.total_analyzed ?? "—"} loading={loading} icon={ShieldAlert} />
         <StatCard
           label="Average Priority Score"
           value={summary.average_priority_score != null ? summary.average_priority_score.toFixed(1) : "—"}
           loading={loading}
+          icon={Siren}
         />
       </div>
 
-      <div className="v-panel v-spectrum-panel">
+      {/* Severity Panel Wrapper */}
+      <div className="v-panel-3d v-spectrum-panel">
         {loading && !error && (
           <div className="v-loading-overlay">
             <span className="v-loading-spinner" />
-            <p>Refreshing dashboard…</p>
+            <p>Refreshing pipeline data…</p>
           </div>
         )}
         <div className="v-panel-title">
-          <Layers size={17} /> Severity spectrum
+          <Layers size={17} /> Incident Severity Distribution Matrix
         </div>
         {loading ? (
-          <div className="v-skeleton" style={{ height: 14, width: "100%" }} />
+          <div className="v-skeleton" style={{ height: 24, width: "100%" }} />
         ) : (
-          <SeverityBreakdownBar breakdown={severityBreakdown} />
+          <div className="v-chart-container-bar">
+            <SeverityBreakdownBar breakdown={severityBreakdown} />
+          </div>
         )}
       </div>
 
+      {/* Graph Section Integration */}
       <div className="v-dash-grid">
-        <div className="v-panel">
+        <div className="v-panel-3d">
           <div className="v-panel-title">
-            <Layers size={17} /> By category
+            <Layers size={17} /> Incidents by Threat Category
           </div>
-          {loading ? (
-            <div className="v-skeleton" style={{ height: 120, width: "100%" }} />
-          ) : (
-            <RankedBarList data={categoryBreakdown} accent="var(--v-primary)" />
-          )}
+          <div className="v-chart-wrapper">
+            {loading ? (
+              <div className="v-skeleton" style={{ height: 200, width: "100%" }} />
+            ) : categoryChartData.length === 0 ? (
+              <div className="v-empty-chart">No category telemetry available</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={categoryChartData} layout="vertical" margin={{ left: 10, right: 20, top: 10, bottom: 10 }}>
+                  <XAxis type="number" stroke="var(--v-text-light)" fontSize={11} axisLine={false} tickLine={false} />
+                  <YAxis dataKey="name" type="category" stroke="var(--v-navy)" fontSize={12} width={90} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={{ fill: "rgba(59, 130, 246, 0.04)" }} contentStyle={{ background: "#fff", borderRadius: "8px", border: "1px solid #e2e8f0" }} />
+                  <Bar dataKey="value" fill="url(#blueGrad)" radius={[0, 4, 4, 0]} barSize={14}>
+                    {categoryChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} />
+                    ))}
+                  </Bar>
+                  <defs>
+                    <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.7} />
+                      <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.9} />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </div>
-        <div className="v-panel">
+
+        <div className="v-panel-3d">
           <div className="v-panel-title">
-            <Radio size={17} /> By source
+            <PieIcon size={17} /> Data Stream Breakdown by Source
           </div>
-          {loading ? (
-            <div className="v-skeleton" style={{ height: 120, width: "100%" }} />
-          ) : (
-            <RankedBarList data={sourceBreakdown} accent="var(--v-saffron)" />
-          )}
+          <div className="v-chart-wrapper flex-center">
+            {loading ? (
+              <div className="v-skeleton" style={{ height: 200, width: "100%" }} />
+            ) : sourceChartData.length === 0 ? (
+              <div className="v-empty-chart">No source stream telemetry available</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={sourceChartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={85}
+                    paddingAngle={4}
+                    dataKey="value"
+                  >
+                    {sourceChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: "#fff", borderRadius: "8px", border: "1px solid #e2e8f0" }} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="v-panel">
+      {/* Critical Incidents & Timeline */}
+      <div className="v-panel-3d">
         <div className="v-panel-title">
-          <Siren size={17} /> Top critical incidents
+          <Siren size={17} /> Top Critical Priority Targets
         </div>
         {loading ? (
           <div className="v-critical-grid">
@@ -216,7 +297,7 @@ const UserDashboard = () => {
             {criticalIncidents.map((incident) => (
               <div
                 key={incident.incident_id}
-                className={`v-incident-card v-sev-${(incident.severity || "moderate").toLowerCase()} v-critical-card`}
+                className={`v-incident-card-3d v-sev-${(incident.severity || "moderate").toLowerCase()}`}
                 onClick={() => navigate("/map", { state: { focusId: incident.incident_id } })}
               >
                 <div className="v-critical-card-top">
@@ -247,9 +328,9 @@ const UserDashboard = () => {
         )}
       </div>
 
-      <div className="v-panel">
+      <div className="v-panel-3d">
         <div className="v-panel-title">
-          <Clock size={17} /> Recent analyses
+          <Clock size={17} /> Live Analysis Log Feed
         </div>
         {loading ? (
           <div className="v-skeleton" style={{ height: 160, width: "100%" }} />
@@ -259,13 +340,13 @@ const UserDashboard = () => {
             <p>Run an analysis from the Incidents page to populate this feed.</p>
           </div>
         ) : (
-          <div className="v-timeline">
+          <div className="v-timeline-modern">
             {recentAnalyses.map((item) => (
-              <div key={item.incident_id} className="v-timeline-row">
+              <div key={item.incident_id} className="v-timeline-row-modern">
                 <SeverityBadge severity={item.severity} size="sm" />
-                <span className="v-timeline-title">{item.title}</span>
+                <span className="v-timeline-title-modern">{item.title}</span>
                 <PriorityScore score={item.priority_score} severity={item.severity} />
-                <span className="v-timeline-time v-mono">{timeAgo(item.analyzed_at)}</span>
+                <span className="v-timeline-time-modern v-mono">{timeAgo(item.analyzed_at)}</span>
               </div>
             ))}
           </div>
