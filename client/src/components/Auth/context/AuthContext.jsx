@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     const token = Cookies.get("token");
     if (!token) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/health`, {
+      const res = await fetch(`${API_BASE_URL}/auth/status`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

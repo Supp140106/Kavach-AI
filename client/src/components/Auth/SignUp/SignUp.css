@@ -438,6 +438,34 @@
   .user-type__button.is-active .user-type__icon.ngo { color: var(--color-ngo); }
   .user-type__button.is-active .user-type__icon.ddmo { color: var(--color-ddmo); }
   .user-type__button.is-active .user-type__icon.user { color: var(--color-user); }
+
+  .user-type__button.is-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    filter: grayscale(0.6);
+    pointer-events: none;
+  }
+
+  .user-type__button.is-disabled:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--color-border);
+    background-color: #fff;
+  }
+
+  .user-type__badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 999px;
+  }
   
   .user-type__label {
     font-size: 0.9rem;

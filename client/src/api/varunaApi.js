@@ -18,13 +18,13 @@ const client = axios.create({
 });
 
 /** GET /incidents — raw deduplicated incidents, no AI analysis */
-export const getIncidents = async (limit = 1500) => {
+export const getIncidents = async (limit = 2000) => {
   const { data } = await client.get("/incidents", { params: { limit } });
   return Array.isArray(data) ? data : [];
 };
 
 /** GET /incidents/analyze — AI-analyzed incidents */
-export const getAnalyzedIncidents = async (limit = 50) => {
+export const getAnalyzedIncidents = async (limit = 70) => {
   const { data } = await client.get("/incidents/analyze", { params: { limit } });
   return Array.isArray(data) ? data : [];
 };

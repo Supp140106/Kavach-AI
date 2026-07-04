@@ -207,26 +207,26 @@ async fn google_login(
     Json(payload): Json<GoogleLoginRequest>,
 ) -> Result<Json<AuthResponse>, (StatusCode, Json<Value>)> {
     if state.google_client_id.is_empty() {
-        return Err(err(StatusCode::SERVICE_UNAVAILABLE, "Google login is not configured"));
+        return Err(err(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "Google login is not configured on the server",
+        ));
     }
 
-    // Trace 1: JWKS/Token Verification
     let claims = google_auth::verify_id_token(&payload.token, &state.google_client_id)
         .await
         .map_err(|e| {
-            tracing::error!("Google token verification failed: {:?}", e);
-            err(StatusCode::UNAUTHORIZED, format!("Token validation failed: {}", e))
+            tracing::warn!("Google token verification failed: {e:?}");
+            err(StatusCode::UNAUTHORIZED, "Google authentication failed")
         })?;
 
     let repo = UserRepository::new(state.db.clone());
 
-    // Trace 2: DB Lookup
     let user = match repo
         .find_by_google_id(&claims.sub)
         .await
         .map_err(|e| {
-            // CHANGE THIS LINE to print the exact SQLx database mapping error:
-            tracing::error!("🛑 GOOGLE AUTH DB MAPPING ERROR DETAILS: {:?}", e);
+            tracing::error!("google_login: find_by_google_id failed: {e:?}");
             err(StatusCode::INTERNAL_SERVER_ERROR, "Database error")
         })?
     {
@@ -237,7 +237,6 @@ async fn google_login(
                 .clone()
                 .unwrap_or_else(|| format!("user_{}", &claims.sub[..8.min(claims.sub.len())]));
 
-            // Trace 3: User Creation
             repo.create_google_user(
                 &claims.sub,
                 claims.email.as_deref(),
@@ -246,22 +245,24 @@ async fn google_login(
             )
             .await
             .map_err(|e| {
-                tracing::error!("Failed to create Google user in DB: {:?}", e);
-                err(StatusCode::INTERNAL_SERVER_ERROR, format!("Database write error: {}", e))
+                tracing::error!("google_login: create_google_user failed: {e:?}");
+                err(StatusCode::INTERNAL_SERVER_ERROR, "Failed to create account")
             })?
         }
     };
 
     repo.touch_last_login(user.id).await.ok();
 
-    // Trace 4: JWT Signing
     let token = jwt::generate_token(user.id, &user.role, &state.jwt_secret)
         .map_err(|e| {
-            tracing::error!("Failed to generate local JWT: {:?}", e);
-            err(StatusCode::INTERNAL_SERVER_ERROR, format!("JWT generation error: {}", e))
+            tracing::error!("google_login: token generation failed: {e:?}");
+            err(StatusCode::INTERNAL_SERVER_ERROR, "Failed to generate token")
         })?;
 
-    Ok(Json(AuthResponse { token, user: user.into() }))
+    Ok(Json(AuthResponse {
+        token,
+        user: user.into(),
+    }))
 }
 
 // ---------------------------------------------------------------------
@@ -290,7 +291,6 @@ async fn approve_user(
     }
 
     let repo = UserRepository::new(state.db.clone());
-
     let user = repo
         .set_approved(id, true)
         .await

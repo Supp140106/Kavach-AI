@@ -46,8 +46,8 @@ static JWKS_CACHE: Lazy<RwLock<Option<Jwks>>> = Lazy::new(|| RwLock::new(None));
 
 async fn fetch_jwks() -> Result<Jwks> {
     let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(3))
-        .connect_timeout(std::time::Duration::from_secs(2))
+        .timeout(std::time::Duration::from_secs(10))
+        .connect_timeout(std::time::Duration::from_secs(8))
         .build()
         .map_err(|e| anyhow!("Failed to build reqwest client: {e}"))?;
 
@@ -55,7 +55,13 @@ async fn fetch_jwks() -> Result<Jwks> {
         .get(GOOGLE_JWKS_URL)
         .send()
         .await
-        .map_err(|e| anyhow!("Failed to reach Google JWKS endpoint via client: {e}"))?;
+        .map_err(|e| {
+            anyhow!(
+                "Failed to reach Google JWKS endpoint via client: {e} (is_timeout={}, is_connect={})",
+                e.is_timeout(),
+                e.is_connect()
+            )
+        })?;
 
     if !resp.status().is_success() {
         return Err(anyhow!(

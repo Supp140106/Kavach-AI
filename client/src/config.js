@@ -8,6 +8,11 @@ export const API_ORIGIN = trimApiBase(
 
 export const API_BASE_URL = `${API_ORIGIN}/api`;
 
+// Separate origin for the standalone Node auth server (google-login quickfix).
+// Falls back to API_BASE_URL if not set, so nothing breaks if you don't use it.
+const AUTH_ORIGIN = trimApiBase(import.meta.env.VITE_AUTH_URL) || API_ORIGIN;
+export const AUTH_BASE_URL = `${AUTH_ORIGIN}/api`;
+
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 export const GOOGLE_AUTH_ENABLED = Boolean(GOOGLE_CLIENT_ID);

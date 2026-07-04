@@ -82,7 +82,10 @@ async fn register(
         if repo
             .find_by_email(email)
             .await
-            .map_err(|_| err(StatusCode::INTERNAL_SERVER_ERROR, "Database error"))?
+            .map_err(|e| {
+                tracing::error!("register: find_by_email failed: {e:?}");
+                err(StatusCode::INTERNAL_SERVER_ERROR, "Database error")
+            })?
             .is_some()
         {
             return Err(err(StatusCode::BAD_REQUEST, "Email already registered"));
@@ -92,7 +95,10 @@ async fn register(
     if repo
         .find_by_username(&payload.username)
         .await
-        .map_err(|_| err(StatusCode::INTERNAL_SERVER_ERROR, "Database error"))?
+        .map_err(|e| {
+            tracing::error!("register: find_by_username failed: {e:?}");
+            err(StatusCode::INTERNAL_SERVER_ERROR, "Database error")
+        })?
         .is_some()
     {
         return Err(err(StatusCode::BAD_REQUEST, "Username already taken"));
@@ -169,7 +175,10 @@ async fn login(
     let user = repo
         .find_by_username(&payload.username)
         .await
-        .map_err(|_| err(StatusCode::INTERNAL_SERVER_ERROR, "Database error"))?
+        .map_err(|e| {
+            tracing::error!("login: find_by_username failed: {e:?}");
+            err(StatusCode::INTERNAL_SERVER_ERROR, "Database error")
+        })?
         .ok_or_else(|| err(StatusCode::NOT_FOUND, "User not found"))?;
 
     if !user.is_approved {
@@ -225,7 +234,10 @@ async fn google_login(
     let user = match repo
         .find_by_google_id(&claims.sub)
         .await
-        .map_err(|_| err(StatusCode::INTERNAL_SERVER_ERROR, "Database error"))?
+        .map_err(|e| {
+            tracing::error!("google_login: find_by_google_id failed: {e:?}");
+            err(StatusCode::INTERNAL_SERVER_ERROR, "Database error")
+        })?
     {
         Some(existing) => existing,
         None => {
@@ -242,7 +254,7 @@ async fn google_login(
             )
             .await
             .map_err(|e| {
-                tracing::error!("Failed to create Google user: {e:?}");
+                tracing::error!("google_login: create_google_user failed: {e:?}");
                 err(StatusCode::INTERNAL_SERVER_ERROR, "Failed to create account")
             })?
         }
@@ -251,7 +263,10 @@ async fn google_login(
     repo.touch_last_login(user.id).await.ok();
 
     let token = jwt::generate_token(user.id, &user.role, &state.jwt_secret)
-        .map_err(|_| err(StatusCode::INTERNAL_SERVER_ERROR, "Failed to generate token"))?;
+        .map_err(|e| {
+            tracing::error!("google_login: token generation failed: {e:?}");
+            err(StatusCode::INTERNAL_SERVER_ERROR, "Failed to generate token")
+        })?;
 
     Ok(Json(AuthResponse {
         token,
@@ -288,7 +303,10 @@ async fn approve_user(
     let user = repo
         .set_approved(id, true)
         .await
-        .map_err(|_| err(StatusCode::INTERNAL_SERVER_ERROR, "Database error"))?
+        .map_err(|e| {
+            tracing::error!("approve_user: set_approved failed: {e:?}");
+            err(StatusCode::INTERNAL_SERVER_ERROR, "Database error")
+        })?
         .ok_or_else(|| err(StatusCode::NOT_FOUND, "User not found"))?;
 
     Ok(Json(json!({

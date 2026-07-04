@@ -7,6 +7,7 @@ import {
   Eye,
   EyeOff,
   Briefcase,
+  Loader2,
 } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
@@ -16,7 +17,7 @@ import { AuthContext } from "../../Auth/context/authContextValue";
 import TriColorAnimation from "../TriColorAnimation/TriColorAnimation";
 import nightImage from "../../../assets/night-mountain-city.jpg";
 import brandLogo from "../../../assets/varuna.png";
-import { API_BASE_URL, GOOGLE_AUTH_ENABLED } from "../../../config";
+import { API_BASE_URL, AUTH_BASE_URL, GOOGLE_AUTH_ENABLED } from "../../../config";
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -43,12 +44,13 @@ const SignUpPage = () => {
   const [passwordError, setPasswordError] = useState("");
   const [showAnimation, setShowAnimation] = useState(false);
   const [userName, setUserName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const userTypes = [
-    { value: "admin", label: "Admin", icon: Shield, color: "admin" },
-    { value: "ngo", label: "NGO", icon: Building, color: "ngo" },
-    { value: "ddmo", label: "DDMO Official", icon: Briefcase, color: "ddmo" },
-    { value: "user", label: "General User", icon: User, color: "user" },
+    { value: "admin", label: "Admin", icon: Shield, color: "admin", disabled: true },
+    { value: "ngo", label: "NGO", icon: Building, color: "ngo", disabled: true },
+    { value: "ddmo", label: "DDMO Official", icon: Briefcase, color: "ddmo", disabled: true },
+    { value: "user", label: "General User", icon: User, color: "user", disabled: false },
   ];
 
   useEffect(() => {
@@ -84,6 +86,7 @@ const SignUpPage = () => {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     if (!isFormValid()) {
       if (formData.password !== formData.confirmPassword) {
         setPasswordError("Passwords do not match.");
@@ -99,6 +102,7 @@ const SignUpPage = () => {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const payload = {
         role: userType,
@@ -144,13 +148,14 @@ const SignUpPage = () => {
     } catch (err) {
       console.error(err.response?.data || err.message);
       alert("Error creating account: " + (err.response?.data?.message || err.message));
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const res = await axios.post(
-        `${API_BASE_URL}/auth/google-login`,
+        `${AUTH_BASE_URL}/auth/google-login`,
         { token: credentialResponse.credential },
         { withCredentials: true }
       );
@@ -452,7 +457,9 @@ const SignUpPage = () => {
                 return (
                   <button
                     key={type.value}
+                    disabled={type.disabled}
                     onClick={() => {
+                      if (type.disabled) return;
                       setUserType(type.value);
                       setFormData((prev) => ({
                         ...prev,
@@ -463,10 +470,12 @@ const SignUpPage = () => {
                       }));
                       setPasswordError("");
                     }}
-                    className={`user-type__button ${userType === type.value ? "is-active" : ""}`}
+                    className={`user-type__button ${userType === type.value ? "is-active" : ""} ${type.disabled ? "is-disabled" : ""}`}
+                    title={type.disabled ? "Coming soon" : undefined}
                   >
                     <IconComponent className={`user-type__icon ${type.color}`} />
                     <span className="user-type__label">{type.label}</span>
+                    {type.disabled && <span className="user-type__badge">Coming soon</span>}
                   </button>
                 );
               })}
@@ -532,10 +541,17 @@ const SignUpPage = () => {
                 <div className="form__section form__actions">
                   <button
                     onClick={handleSubmit}
-                    disabled={!isFormValid()}
-                    className={`button button--primary ${!isFormValid() ? "is-disabled" : ""}`}
+                    disabled={!isFormValid() || isSubmitting}
+                    className={`button button--primary ${(!isFormValid() || isSubmitting) ? "is-disabled" : ""}`}
                   >
-                    Create Account →
+                    {isSubmitting ? (
+                      <span className="button__loading">
+                        <Loader2 size={18} className="button__spinner" />
+                        Creating Account...
+                      </span>
+                    ) : (
+                      "Create Account →"
+                    )}
                   </button>
                 </div>
               </>

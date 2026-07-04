@@ -9,7 +9,7 @@ import TriColorAnimation from "../TriColorAnimation/TriColorAnimation";
 import "./SignIn.css";
 import nightImage from "../../../assets/night-mountain-city.jpg";
 import brandLogo from "../../../assets/varuna.png";
-import { API_BASE_URL, GOOGLE_AUTH_ENABLED } from "../../../config";
+import { API_BASE_URL,AUTH_BASE_URL , GOOGLE_AUTH_ENABLED } from "../../../config";
 
 const SignInPage = () => {
   const navigate = useNavigate();
@@ -48,11 +48,11 @@ const SignInPage = () => {
     }
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/auth/login`, {
+      const res = await axios.post(`${AUTH_BASE_URL}/auth/login`, {
         username: formData.username,
         password: formData.password,
       });
-      
+
       // Set user name and show animation
       setUserName(res.data.user?.name || res.data.username || formData.username || "User");
       login(res.data.token);
@@ -65,10 +65,10 @@ const SignInPage = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await axios.post(`${API_BASE_URL}/auth/google-login`, {
+      const res = await axios.post(`${AUTH_BASE_URL}/auth/google-login`, {
         token: credentialResponse.credential,
       });
-      
+
       // Set user name and show animation
       setUserName(res.data.user?.name || res.data.username || "User");
       login(res.data.token);
@@ -91,12 +91,12 @@ const SignInPage = () => {
   return (
     <div className="page__wrapper">
       {/* Tri-Color Animation */}
-      <TriColorAnimation 
+      <TriColorAnimation
         isVisible={showAnimation}
         onComplete={handleAnimationComplete}
         userName={userName}
       />
-      
+
       <div className="signin-layout">
         <div className="signin-layout__visuals">
           <img src={nightImage} alt="Night Mountain City" className="background-image" />
@@ -189,6 +189,8 @@ const SignInPage = () => {
                   <GoogleLogin
                     onSuccess={handleGoogleSuccess}
                     onError={handleGoogleError}
+                    useOneTap={false}
+                    state_cookie_domain="localhost" // <-- Explicitly locks the initialization domain context
                   />
                 </div>
               </div>

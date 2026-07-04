@@ -15,11 +15,9 @@ impl UserRepository {
         Self { pool }
     }
 
-// Replace the select blocks in src/repository/users.rs with these explicit columns:
-
     pub async fn find_by_id(&self, id: Uuid) -> Result<Option<User>> {
         let user = sqlx::query_as::<_, User>(
-            "SELECT id, username, email, password_hash, google_id, role, official_id, location, phone, bio, picture, is_approved, ngo_details, last_login, created_at, updated_at FROM users WHERE id = $1"
+            "SELECT id, username, email, password_hash, google_id, role, official_id, location, phone, bio, picture, is_approved, ngo_details, preferences, last_login, created_at, updated_at FROM users WHERE id = $1"
         )
         .bind(id)
         .fetch_optional(&self.pool)
@@ -29,7 +27,7 @@ impl UserRepository {
 
     pub async fn find_by_username(&self, username: &str) -> Result<Option<User>> {
         let user = sqlx::query_as::<_, User>(
-            "SELECT id, username, email, password_hash, google_id, role, official_id, location, phone, bio, picture, is_approved, ngo_details, last_login, created_at, updated_at FROM users WHERE username = $1"
+            "SELECT id, username, email, password_hash, google_id, role, official_id, location, phone, bio, picture, is_approved, ngo_details, preferences, last_login, created_at, updated_at FROM users WHERE username = $1"
         )
         .bind(username)
         .fetch_optional(&self.pool)
@@ -39,7 +37,7 @@ impl UserRepository {
 
     pub async fn find_by_email(&self, email: &str) -> Result<Option<User>> {
         let user = sqlx::query_as::<_, User>(
-            "SELECT id, username, email, password_hash, google_id, role, official_id, location, phone, bio, picture, is_approved, ngo_details, last_login, created_at, updated_at FROM users WHERE email = $1"
+            "SELECT id, username, email, password_hash, google_id, role, official_id, location, phone, bio, picture, is_approved, ngo_details, preferences, last_login, created_at, updated_at FROM users WHERE email = $1"
         )
         .bind(email)
         .fetch_optional(&self.pool)
@@ -49,7 +47,7 @@ impl UserRepository {
 
     pub async fn find_by_google_id(&self, google_id: &str) -> Result<Option<User>> {
         let user = sqlx::query_as::<_, User>(
-            "SELECT id, username, email, password_hash, google_id, role, official_id, location, phone, bio, picture, is_approved, ngo_details, last_login, created_at, updated_at FROM users WHERE google_id = $1"
+            "SELECT id, username, email, password_hash, google_id, role, official_id, location, phone, bio, picture, is_approved, ngo_details, preferences, last_login, created_at, updated_at FROM users WHERE google_id = $1"
         )
         .bind(google_id)
         .fetch_optional(&self.pool)
@@ -110,7 +108,7 @@ impl UserRepository {
             RETURNING 
                 id, username, email, password_hash, google_id, role, 
                 official_id, location, phone, bio, picture, is_approved, 
-                ngo_details, last_login, created_at, updated_at
+                ngo_details, preferences, last_login, created_at, updated_at
             "#,
         )
         .bind(google_id)
