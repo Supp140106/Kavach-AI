@@ -1,4 +1,6 @@
 import asyncio
+import re
+import time
 from datetime import datetime
 from typing import Any
 
@@ -8,6 +10,15 @@ from app.services.store import save_incidents, save_analysis
 from app.core.db import get_conn
 
 SCHEDULE_INTERVAL_SECONDS = 30 * 60
+
+# Minimum gap between consecutive LLM analysis calls, to stay under Gemini's
+# free-tier requests-per-minute limit. Tune this up if you're still seeing
+# 429s, or down if you're on a paid tier with higher limits.
+MIN_SECONDS_BETWEEN_CALLS = 4.0
+
+# Retry behavior for transient 429 RESOURCE_EXHAUSTED errors specifically.
+MAX_RETRIES_ON_RATE_LIMIT = 3
+BASE_BACKOFF_SECONDS = 20.0
 
 
 def _fetch_new_incidents() -> list[Any]:
@@ -24,14 +35,49 @@ def _fetch_new_incidents() -> list[Any]:
     return pending
 
 
-def _analyze_pending(pending: list[Any]) -> None:
-    for incident in pending:
+def _is_rate_limit_error(exc: Exception) -> bool:
+    text = str(exc)
+    return "429" in text or "RESOURCE_EXHAUSTED" in text
+
+
+def _extract_retry_delay_seconds(exc: Exception) -> float | None:
+    """Best-effort parse of a suggested retry delay from the error text."""
+    match = re.search(r"retryDelay['\"]?\s*[:=]\s*['\"]?(\d+(?:\.\d+)?)", str(exc))
+    if match:
         try:
-            print(f"[SCHED] analyzing {incident.id}", flush=True)
-            result = analyze_fetched_incident(incident)
-            save_analysis(incident.id, result)
-        except Exception as e:
-            print(f"[SCHED] analysis failed for {incident.id}: {e}", flush=True)
+            return float(match.group(1))
+        except ValueError:
+            return None
+    return None
+
+
+def _analyze_pending(pending: list[Any]) -> None:
+    total = len(pending)
+    for index, incident in enumerate(pending, start=1):
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                print(f"[SCHED] analyzing {incident.id} ({index}/{total})", flush=True)
+                result = analyze_fetched_incident(incident)
+                save_analysis(incident.id, result)
+                break
+            except Exception as e:
+                if _is_rate_limit_error(e) and attempt <= MAX_RETRIES_ON_RATE_LIMIT:
+                    wait = _extract_retry_delay_seconds(e) or (BASE_BACKOFF_SECONDS * attempt)
+                    print(
+                        f"[SCHED] rate limited on {incident.id}, "
+                        f"retry {attempt}/{MAX_RETRIES_ON_RATE_LIMIT} in {wait:.0f}s",
+                        flush=True,
+                    )
+                    time.sleep(wait)
+                    continue
+                print(f"[SCHED] analysis failed for {incident.id}: {e}", flush=True)
+                break
+
+        # Throttle between incidents regardless of outcome, so we don't
+        # immediately re-trigger the rate limit on the next item.
+        time.sleep(MIN_SECONDS_BETWEEN_CALLS)
 
 
 async def run_scheduler() -> None:

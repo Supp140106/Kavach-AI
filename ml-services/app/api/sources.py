@@ -7,6 +7,7 @@ from app.connectors.gdacs import GDACSConnector
 from app.connectors.reddit import RedditConnector
 from app.connectors.bluesky import BlueskyConnector
 from app.connectors.firms import FIRMSConnector
+from app.connectors.google_news import GoogleNewsConnector
 
 from app.services.aggregator import IncidentAggregator
 from app.services.store import get_stored_incidents
@@ -83,6 +84,18 @@ def bluesky(query: str, limit: int = 20):
 @router.get("/firms")
 def firms_hotspots(limit: int = Query(default=20, ge=1, le=100)):
     connector = FIRMSConnector()
+    raw = connector.fetch()
+    incidents = connector.normalize(raw)
+    return incidents[:limit]
+
+@router.get("/google-news")
+def google_news(query: str | None = None, limit: int = Query(default=20, ge=1, le=100)):
+    """
+    Free Google News RSS connector (no API key needed).
+    Pass `query` to search a custom topic, otherwise defaults to
+    common disaster keywords (earthquake, flood, wildfire, etc).
+    """
+    connector = GoogleNewsConnector(query=query) if query else GoogleNewsConnector()
     raw = connector.fetch()
     incidents = connector.normalize(raw)
     return incidents[:limit]

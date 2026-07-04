@@ -97,6 +97,15 @@ def get_stored_analyses(limit: int = 500) -> list[dict]:
     return results
 
 
+import re
+
+
+def _text_mentions_location(text: str, location: str) -> bool:
+    """Whole-word match so 'india' doesn't match inside 'indiana'."""
+    pattern = r"(?<![a-z0-9])" + re.escape(location.lower()) + r"(?![a-z0-9])"
+    return re.search(pattern, text) is not None
+
+
 def _infer_location_and_country(incident: Incident) -> tuple[str | None, str | None]:
     if incident.location or incident.country:
         return incident.location, incident.country
@@ -106,7 +115,7 @@ def _infer_location_and_country(incident: Incident) -> tuple[str | None, str | N
     ).lower()
 
     for location in COMMON_LOCATIONS:
-        if location.lower() in text:
+        if _text_mentions_location(text, location):
             return location, location
 
     return None, None

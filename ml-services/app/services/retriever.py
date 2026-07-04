@@ -19,16 +19,37 @@ def _build_time_filter(parsed: dict[str, Any]) -> list[Any]:
 
 
 def _build_location_filter(parsed: dict[str, Any]) -> list[Any]:
+    """Match the parsed location as a whole word, not a raw substring.
+
+    A plain '%india%' LIKE match also matches 'Indiana', 'Indian Ocean', etc.
+    Using word-boundary patterns (space/start/end/punctuation on both sides)
+    avoids these false positives while still working with a simple LIKE.
+    """
     filters = []
     location = parsed.get("location")
     if location:
-        like_value = f"%{location}%"
+        loc = location.lower()
+        patterns = [
+            loc,                # exact match e.g. country == "india"
+            f"{loc} %",         # starts with "india ..."
+            f"% {loc}",         # ends with "... india"
+            f"% {loc} %",       # "... india ..."
+            f"{loc},%",         # "india, foo"
+            f"%,{loc}",         # "foo,india"
+            f"%,{loc},%",       # "foo,india,bar"
+            f"%,{loc} %",
+            f"% {loc},%",
+        ]
+
+        def word_match(column):
+            return or_(*[func.lower(column).like(p) for p in patterns])
+
         filters.append(
             or_(
-                func.lower(IncidentModel.location).like(like_value.lower()),
-                func.lower(IncidentModel.country).like(like_value.lower()),
-                func.lower(IncidentModel.title).like(like_value.lower()),
-                func.lower(IncidentModel.description).like(like_value.lower()),
+                word_match(IncidentModel.location),
+                word_match(IncidentModel.country),
+                word_match(IncidentModel.title),
+                word_match(IncidentModel.description),
             )
         )
     return filters
@@ -107,8 +128,15 @@ def parse_result(row: Any) -> dict[str, Any]:
     return result
 
 
-def retrieve_incidents(question: str) -> list[dict[str, Any]]:
-    parsed = parse_query(question)
+def retrieve_incidents(question: str, parsed: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    """Retrieve incidents matching the question.
+
+    If `parsed` is provided (e.g. already computed by the caller), it is
+    reused instead of re-parsing the question, so retrieval and the rest
+    of the pipeline always agree on the same filters.
+    """
+    if parsed is None:
+        parsed = parse_query(question)
     stmt = _build_query(parsed)
     with get_session() as session:
         rows = session.execute(stmt).all()

@@ -3,6 +3,7 @@ from app.connectors.nasa import NASAConnector
 from app.connectors.usgs import USGSConnector
 from app.connectors.gdacs import GDACSConnector
 from app.connectors.gdelt_news import GDELTNewsConnector
+from app.connectors.google_news import GoogleNewsConnector
 from app.connectors.reliefweb import ReliefWebConnector
 from app.connectors.bluesky import BlueskyConnector
 from app.connectors.firms import FIRMSConnector
@@ -21,6 +22,7 @@ class IncidentAggregator:
             ("usgs", lambda: USGSConnector()),
             ("gdacs", lambda: GDACSConnector()),
             ("gdelt_news", lambda: GDELTNewsConnector()),
+            ("google_news", lambda: GoogleNewsConnector()),  # capped to 100 below like other sources; lower the [:100] slice if you want fewer to conserve LLM quota
             ("reliefweb", lambda: ReliefWebConnector()),
             ("firms", lambda: FIRMSConnector()),
             ("bluesky", lambda: (BlueskyConnector(), "flood")),

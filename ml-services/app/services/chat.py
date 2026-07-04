@@ -7,11 +7,25 @@ from app.services.retriever import retrieve_incidents
 CHAT_SYSTEM_PROMPT = """/no_think
 You are VARUNA AI, an emergency response analyst.
 
-You will receive a set of disaster incidents and the user's question.
-Answer ONLY using the provided incidents.
-If no incidents match, explicitly say no matching incidents were found.
-Do not hallucinate.
-Provide concise, actionable summaries.
+You will receive a set of disaster incidents and the user's question, along
+with the parsed filters (location, category, time range) that were already
+used to select those incidents from the database.
+
+Rules:
+- Answer ONLY using the provided incidents.
+- If the user asked about a specific location, treat the "Location" filter
+  below as authoritative. Do NOT include an incident whose location/country
+  is a different place that merely looks similar in text (e.g. "India" is
+  NOT "Indiana", "Georgia" the country is NOT "Georgia" the US state).
+  If you are not confident an incident actually matches the requested
+  location, exclude it rather than guessing.
+- If no incidents match, explicitly say no matching incidents were found,
+  and return an empty relevant_incidents list. Do not pad the answer with
+  unrelated incidents just because some were retrieved.
+- Do not hallucinate facts not present in the incident data.
+- Provide concise, actionable summaries.
+- Be consistent: given the same incidents and question, your answer should
+  not contradict itself or vary in which incidents it calls "relevant".
 
 Return valid JSON only with this schema:
 {
@@ -57,10 +71,15 @@ def _extract_json(raw: str) -> str:
 
 def answer_question(question: str) -> dict:
     parsed = parse_query(question)
-    incidents = retrieve_incidents(question)
+    incidents = retrieve_incidents(question, parsed=parsed)
     context = _render_incidents(incidents)
 
     user_prompt = f"""
+Parsed Filters (already applied to retrieve the incidents below):
+- Location: {parsed.get("location") or "Not specified"}
+- Category: {parsed.get("category") or "Not specified"}
+- Time range: {parsed.get("time_range") or "Not specified"}
+
 Incident Data:
 {context}
 
