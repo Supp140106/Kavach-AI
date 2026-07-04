@@ -2,3 +2,4 @@
 pub mod incident;
 pub mod analysis;
 pub mod resource;
+pub mod user;

@@ -3,3 +3,4 @@ pub mod ai_client;
 pub mod postgres;
 pub mod notifier;
 pub mod scheduler;
+pub mod auth;

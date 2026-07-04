@@ -41,6 +41,13 @@ async fn main() {
     let ai_service_url =
         env::var("AI_SERVICE_URL").unwrap_or_else(|_| "http://localhost:8000".into());
 
+    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET environment variable missing");
+
+    let google_client_id = env::var("GOOGLE_CLIENT_ID").unwrap_or_default();
+    if google_client_id.is_empty() {
+        tracing::warn!("GOOGLE_CLIENT_ID not set - Google sign-in will be disabled");
+    }
+
     tracing::info!("Connecting to PostgreSQL...");
 
     let pool = sqlx::postgres::PgPoolOptions::new()
@@ -58,7 +65,12 @@ async fn main() {
 
     tracing::info!("Database ready.");
 
-    let state = Arc::new(AppState::new(pool, ai_service_url));
+    let state = Arc::new(AppState::new(
+        pool,
+        ai_service_url,
+        jwt_secret,
+        google_client_id,
+    ));
 
     let cors = CorsLayer::new()
         .allow_origin(Any)
